@@ -87,6 +87,17 @@ const CATEGORY_SECTION_LABELS = {
   "tools & extras": "tools & extras",
 };
 
+const SHELF_FILTERS = [
+  { id: "all", label: "all" },
+  { id: "lippies", label: "lippies" },
+  { id: "base", label: "base" },
+  { id: "cheeks", label: "cheeks" },
+  { id: "eyes", label: "eyes" },
+  { id: "skin, scent, body", label: "skin + scent" },
+  { id: "tools & extras", label: "tools" },
+  { id: "other", label: "other" },
+];
+
 function getCategorySection(category) {
   const normalized = String(category || "").toLowerCase();
 
@@ -117,6 +128,27 @@ function groupShelfProducts(products) {
   return order
     .filter((section) => groups[section]?.length)
     .map((section) => ({ section, products: groups[section] }));
+}
+
+function shelfProductsValue(products) {
+  return products.reduce((sum, product) => {
+    const price = Number(product.price || 0);
+    return Number.isFinite(price) ? sum + price : sum;
+  }, 0);
+}
+
+function productMatchesShelfSearch(product, query) {
+  const normalizedQuery = String(query || "").trim().toLowerCase();
+  if (!normalizedQuery) return true;
+
+  const haystack = [product.brand, product.name, product.category, product.shade]
+    .join(" ")
+    .toLowerCase();
+
+  return normalizedQuery
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((part) => haystack.includes(part));
 }
 
 function CategorySelectOptions({ value }) {
@@ -237,6 +269,7 @@ function themeVars(theme) {
     "--accent-soft": theme.tokens.accentSoft,
     "--gold": theme.tokens.gold,
     "--glow": theme.tokens.glow,
+    "--doodle": theme.tokens.doodle || theme.tokens.accent,
   };
 }
 
@@ -249,13 +282,179 @@ function fontVars(font) {
   };
 }
 
+
+function DoodleIcon({ type = "sparkles", className = "", style }) {
+  const common = {
+    className,
+    viewBox: "0 0 96 96",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg",
+    style: { color: "var(--doodle)", ...style },
+  };
+
+  const stroke = {
+    stroke: "currentColor",
+    strokeWidth: 3.2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+  };
+
+  if (type === "lipstick") {
+    return (
+      <svg {...common}>
+        <path {...stroke} d="M36 82h28M38 78h24V43H38v35Z" />
+        <path {...stroke} d="M43 43V30l9-16 9 16v13" />
+        <path {...stroke} d="M34 78h32v8H34z" />
+        <path {...stroke} d="M42 55h20" />
+      </svg>
+    );
+  }
+
+  if (type === "compact") {
+    return (
+      <svg {...common}>
+        <path {...stroke} d="M24 58c0 16 48 16 48 0 0-9-11-16-24-16S24 49 24 58Z" />
+        <path {...stroke} d="M31 57c3 6 31 6 34 0" />
+        <path {...stroke} d="M32 42c4-10 28-10 32 0" />
+        <path {...stroke} d="M40 33c4-4 12-4 16 0" />
+      </svg>
+    );
+  }
+
+  if (type === "receipt") {
+    return (
+      <svg {...common}>
+        <path {...stroke} d="M29 18h38v60l-7-4-6 4-6-4-6 4-6-4-7 4V18Z" />
+        <path {...stroke} d="M39 34h20M39 46h18M39 58h12" />
+        <path {...stroke} d="M58 58h2" />
+      </svg>
+    );
+  }
+
+  if (type === "bag") {
+    return (
+      <svg {...common}>
+        <path {...stroke} d="M27 36h42l-4 42H31L27 36Z" />
+        <path {...stroke} d="M38 36c0-10 20-10 20 0" />
+        <path {...stroke} d="M35 64 61 48M61 64 35 48" />
+      </svg>
+    );
+  }
+
+  if (type === "bow") {
+    return (
+      <svg {...common}>
+        <path {...stroke} d="M47 47c-8-17-27-20-29-7-2 12 18 15 29 7Z" />
+        <path {...stroke} d="M49 47c8-17 27-20 29-7 2 12-18 15-29 7Z" />
+        <path {...stroke} d="M42 44h12v10H42z" />
+        <path {...stroke} d="M42 54 29 73M54 54l13 19" />
+      </svg>
+    );
+  }
+
+  if (type === "flower") {
+    return (
+      <svg {...common}>
+        <path {...stroke} d="M48 48c-9-20 8-28 10-12 18-11 26 8 7 12 20 9 8 27-7 13-9 20-28 8-13-7-20 9-28-8-12-10-18Z" />
+        <path {...stroke} d="M48 48h.1" />
+        <path {...stroke} d="M48 62c0 8-2 14-7 18" />
+        <path {...stroke} d="M48 70c8-5 15-5 22 0" />
+      </svg>
+    );
+  }
+
+  if (type === "swatch") {
+    return (
+      <svg {...common}>
+        <path {...stroke} d="M20 58c17-16 30-23 47-23 8 0 14 4 12 10-3 9-22 5-35 12-11 6-17 15-24 8-2-2-2-5 0-7Z" />
+        <path {...stroke} d="M30 58c13-9 27-15 41-16" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...common}>
+      <path {...stroke} d="M48 14l4 18 17 5-17 5-4 18-5-18-17-5 17-5 5-18Z" />
+      <path {...stroke} d="M24 54l2 8 8 2-8 2-2 8-2-8-8-2 8-2 2-8Z" />
+      <path {...stroke} d="M70 58l2 7 7 2-7 2-2 7-2-7-7-2 7-2 2-7Z" />
+    </svg>
+  );
+}
+
+function DoodleLayer({ view }) {
+  const map = {
+    home: [
+      ["bag", "right-[-1.4rem] top-[7.4rem] h-28 w-28 rotate-[-10deg] opacity-[0.13]"],
+      ["sparkles", "left-[-1.2rem] top-[18rem] h-20 w-20 rotate-[8deg] opacity-[0.12]"],
+      ["swatch", "right-[0.6rem] bottom-[10rem] h-24 w-24 rotate-[12deg] opacity-[0.10]"],
+    ],
+    shelf: [
+      ["lipstick", "right-[-1.1rem] top-[8rem] h-28 w-28 rotate-[12deg] opacity-[0.14]"],
+      ["compact", "left-[-1.2rem] bottom-[11rem] h-24 w-24 rotate-[-10deg] opacity-[0.10]"],
+      ["flower", "right-[1rem] bottom-[5rem] h-20 w-20 rotate-[8deg] opacity-[0.10]"],
+    ],
+    vault: [
+      ["receipt", "right-[-1.3rem] top-[8.5rem] h-28 w-28 rotate-[8deg] opacity-[0.13]"],
+      ["bow", "left-[-1.5rem] bottom-[12rem] h-24 w-24 rotate-[-10deg] opacity-[0.10]"],
+    ],
+    edit: [
+      ["flower", "right-[-1rem] top-[8rem] h-28 w-28 rotate-[10deg] opacity-[0.12]"],
+      ["sparkles", "left-[-1rem] bottom-[12rem] h-24 w-24 rotate-[-8deg] opacity-[0.11]"],
+    ],
+  };
+
+  const items = map[view] || map.home;
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {items.map(([type, className], index) => (
+        <DoodleIcon key={`${view}-${type}-${index}`} type={type} className={cn("absolute", className)} />
+      ))}
+      <div className="absolute left-8 top-20 h-1 w-16 rotate-[-6deg] rounded-full opacity-[0.08]" style={{ background: "var(--doodle)" }} />
+      <div className="absolute right-12 top-[30rem] h-1 w-12 rotate-[10deg] rounded-full opacity-[0.07]" style={{ background: "var(--doodle)" }} />
+    </div>
+  );
+}
+
+function Sticker({ children, className = "" }) {
+  return (
+    <span
+      className={cn("inline-flex rotate-[-2deg] items-center rounded-full border px-3 py-1 text-xs", className)}
+      style={{ borderColor: "var(--line)", background: "var(--sticker)", color: "var(--muted)" }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function DoodleDivider({ type = "sparkles" }) {
+  return (
+    <div className="my-3 flex items-center gap-2 opacity-70">
+      <span className="h-px flex-1" style={{ background: "var(--line)" }} />
+      <DoodleIcon type={type} className="h-7 w-7" />
+      <span className="h-px flex-1" style={{ background: "var(--line)" }} />
+    </div>
+  );
+}
+
+function EmptySketch({ type = "lipstick", title, copy, action }) {
+  return (
+    <Card style={{ background: "var(--surface-strong)" }} className="text-center">
+      <DoodleIcon type={type} className="mx-auto h-20 w-20 opacity-45" />
+      <p className="mt-2 text-xl tracking-[-0.04em]">{title}</p>
+      {copy && <p className="mx-auto mt-2 max-w-[20rem] text-sm leading-6" style={{ color: "var(--muted)" }}>{copy}</p>}
+      {action && <div className="mt-5">{action}</div>}
+    </Card>
+  );
+}
+
 function Card({ children, className = "", delay = 0, style, ...props }) {
   return (
     <motion.article
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.42, delay, ease }}
-      className={cn("rounded-[1.35rem] border p-4", className)}
+      className={cn("doodle-card rounded-[1.35rem] border p-4", className)}
       style={{ borderColor: "var(--line)", background: "var(--surface)", ...style }}
       {...props}
     >
@@ -346,13 +545,14 @@ function GhostButton({ children, active = false, disabled = false, className, ..
   );
 }
 
-function Shell({ theme, font, children }) {
+function Shell({ theme, font, view, children }) {
   return (
     <main
       className="deja-pan-root relative min-h-[100dvh] overflow-hidden"
       style={{ ...themeVars(theme), ...fontVars(font), background: "var(--bg)", color: "var(--text)" }}
     >
       <div className="pointer-events-none absolute inset-0 opacity-80" style={{ background: "linear-gradient(180deg, var(--glow), transparent 18rem)" }} />
+      <DoodleLayer view={view} />
       <div className="relative mx-auto min-h-[100dvh] w-full max-w-[470px] px-5 pb-28 pt-5 sm:px-6">
         {children}
       </div>
@@ -371,7 +571,10 @@ function AppHeader({ onReset, onOpenGuide, onOpenTheme, onOpenLevels }) {
       className="pb-6"
     >
       <div className="flex items-center justify-between gap-3">
-        <p data-hand-font="true" className="text-[1.65rem] leading-none tracking-[-0.06em]">déjà pan</p>
+        <div className="flex items-center gap-2">
+          <DoodleIcon type="flower" className="h-8 w-8 opacity-55" />
+          <p data-hand-font="true" className="text-[1.65rem] leading-none tracking-[-0.06em]">déjà pan</p>
+        </div>
         <div className="flex flex-wrap justify-end gap-2">
           <GhostButton onClick={onOpenGuide} className="px-3 py-2 text-xs">guide</GhostButton>
           <GhostButton onClick={onOpenTheme} className="px-3 py-2 text-xs">style</GhostButton>
@@ -890,15 +1093,17 @@ function HomeHero({ state, dashboardStats, currency, onCompleteNoBuy, onGoShelf 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.44, ease }}
-      className="rounded-[1.7rem] border p-5"
+      className="doodle-card relative overflow-hidden rounded-[1.7rem] border p-5"
       style={{ borderColor: "var(--line)", background: "var(--surface-strong)" }}
     >
-      <p className="text-[0.68rem] uppercase tracking-[0.16em]" style={{ color: "var(--faint)" }}>home</p>
+      <DoodleIcon type="sparkles" className="absolute right-4 top-4 h-16 w-16 opacity-20" />
+      <DoodleIcon type="swatch" className="absolute -right-3 bottom-24 h-20 w-20 rotate-12 opacity-[0.12]" />
+      <Sticker>home</Sticker>
       <h1 data-hand-font="true" className="mt-3 max-w-[20rem] text-[3.15rem] font-normal leading-[0.86] tracking-[-0.065em]">
         {headline}
       </h1>
       <p className="mt-4 max-w-[22rem] text-sm leading-6" style={{ color: "var(--muted)" }}>
-        Open this before checkout. Count the day, pause the urge, or go use something you already own.
+        Open this before checkout. Count the day, pause the urge, or go use something you already own. Tiny proof, no perfection.
       </p>
 
       <div className="mt-5 grid grid-cols-3 gap-2">
@@ -916,6 +1121,7 @@ function HomeHero({ state, dashboardStats, currency, onCompleteNoBuy, onGoShelf 
         </div>
       </div>
 
+      <DoodleDivider type="bow" />
       <div className="mt-5 grid grid-cols-[1fr_auto] gap-2">
         <PrimaryButton onClick={onCompleteNoBuy} disabled={doneToday} className="py-3">
           {doneToday ? "today counted" : "log today as no-buy"}
@@ -960,7 +1166,10 @@ function SmallWinsCard({ state, dashboardStats, currency }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs" style={{ color: "var(--faint)" }}>small wins</p>
-          <h2 data-hand-font="true" className="mt-1 text-[1.65rem] leading-none tracking-[-0.04em]">proof you did not give in</h2>
+          <div className="mt-1 flex items-center gap-2">
+            <h2 data-hand-font="true" className="text-[1.65rem] leading-none tracking-[-0.04em]">proof you did not give in</h2>
+            <DoodleIcon type="sparkles" className="h-8 w-8 opacity-45" />
+          </div>
         </div>
         {state.noBuyStreak > 0 && (
           <span className="rounded-full border px-3 py-1 text-xs" style={{ borderColor: "var(--line)", color: "var(--muted)" }}>
@@ -1033,7 +1242,8 @@ function UrgeCard({ urgeSession, updateUrgeDraft, beginUrgeSurf, cancelUrgeSurf,
   const matches = findShelfMatches(products, draft);
 
   return (
-    <Card delay={0.15} className="mt-4">
+    <Card delay={0.15} className="mt-4 relative overflow-hidden">
+      <DoodleIcon type="receipt" className="absolute -right-3 top-3 h-20 w-20 rotate-12 opacity-[0.15]" />
       <SectionTitle
         eyebrow="pause"
         title={isActive ? "wait it out" : "about to buy?"}
@@ -1250,7 +1460,10 @@ function ProductCard({ product, onLogUse, onAddPastUses, onMarkEmpty, onEdit, on
     >
       <div className="p-3.5">
         <div className="flex items-start gap-3">
-          <ProductMark product={product} />
+          <div className="relative">
+            <ProductMark product={product} />
+            <DoodleIcon type={getCategorySection(product.category) === "lippies" ? "lipstick" : getCategorySection(product.category) === "base" ? "compact" : "sparkles"} className="absolute -bottom-2 -right-2 h-7 w-7 opacity-25" />
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -1329,7 +1542,8 @@ function ShelfValueCard({ dashboardStats, currency }) {
   const hasPrices = dashboardStats.pricedProductCount > 0;
 
   return (
-    <Card delay={0.08} className="mb-4 p-4" style={{ background: "var(--surface-strong)" }}>
+    <Card delay={0.08} className="mb-4 p-4 relative overflow-hidden" style={{ background: "var(--surface-strong)" }}>
+      <DoodleIcon type="receipt" className="absolute -right-2 top-2 h-20 w-20 rotate-12 opacity-[0.15]" />
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.14em]" style={{ color: "var(--faint)" }}>shelf value</p>
@@ -1361,8 +1575,146 @@ function ShelfValueCard({ dashboardStats, currency }) {
 }
 
 
-function ProductList({ products, onLogUse, onAddPastUses, onMarkEmpty, onEditProduct, onDeleteProduct, currency }) {
-  if (products.length < 4) {
+function ProductRow({ product, onLogUse, onAddPastUses, onMarkEmpty, onEdit, onDelete, currency }) {
+  const isEmpty = product.status === "empty";
+  const cpu = costPerUse(product);
+
+  return (
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.24, ease }}
+      className={cn("rounded-[1.15rem] border p-3", isEmpty && "opacity-70")}
+      style={{ borderColor: "var(--line)", background: "var(--surface)" }}
+    >
+      <div className="flex items-start gap-3">
+        <ProductMark product={product} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="truncate text-[1.02rem] leading-tight tracking-[-0.03em]">
+                {product.brand ? `${product.brand} · ` : ""}{product.name}
+              </p>
+              <p className="mt-1 truncate text-sm" style={{ color: "var(--muted)" }}>
+                {product.shade || displayCategory(product.category)}
+              </p>
+            </div>
+            <span
+              className="shrink-0 rounded-full border px-2.5 py-1 text-[0.68rem]"
+              style={{ borderColor: "var(--line)", color: isEmpty ? "var(--gold)" : "var(--muted)" }}
+            >
+              {isEmpty ? "empty" : displayCategory(product.category)}
+            </span>
+          </div>
+
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <SoftMeta>{product.uses} uses</SoftMeta>
+            <SoftMeta>{formatRelativeDate(isEmpty ? product.emptiedAt : product.lastUsedAt)}</SoftMeta>
+            {cpu && <SoftMeta>{formatMoney(cpu, currency)}/use</SoftMeta>}
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            {!isEmpty && <PrimaryButton onClick={() => onLogUse(product.id)} className="px-3 py-2 text-xs">use</PrimaryButton>}
+            {!isEmpty && <GhostButton onClick={() => onAddPastUses(product)} className="px-3 py-2 text-xs">past</GhostButton>}
+            {!isEmpty && <GhostButton onClick={() => onMarkEmpty(product.id)} className="px-3 py-2 text-xs">empty</GhostButton>}
+            <GhostButton onClick={() => onEdit(product)} className="px-3 py-2 text-xs">edit</GhostButton>
+            <GhostButton
+              onClick={() => {
+                if (window.confirm(`Delete ${product.name} from your shelf?`)) onDelete(product.id);
+              }}
+              className="px-3 py-2 text-xs"
+            >
+              delete
+            </GhostButton>
+          </div>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+function SectionFilterButton({ active, children, ...props }) {
+  return (
+    <button
+      type="button"
+      className="shrink-0 rounded-full border px-3.5 py-2 text-sm transition"
+      style={{
+        borderColor: active ? "var(--accent)" : "var(--line)",
+        background: active ? "var(--accent-soft)" : "var(--surface)",
+        color: active ? "var(--text)" : "var(--muted)",
+      }}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ShelfOrganizer({ query, setQuery, section, setSection, hasFilters, onClear, resultCount, totalCount }) {
+  return (
+    <Card delay={0.1} className="mb-4 p-3.5">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm" style={{ color: "var(--muted)" }}>find something fast</p>
+          <p className="mt-1 text-xs" style={{ color: "var(--faint)" }}>
+            {hasFilters ? `${resultCount}/${totalCount} showing` : `${totalCount} products in shelf`}
+          </p>
+        </div>
+        {hasFilters && <GhostButton onClick={onClear} className="px-3 py-2 text-xs">clear</GhostButton>}
+      </div>
+
+      <div className="mt-3">
+        <TextInput
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="search brand, shade, product..."
+        />
+      </div>
+
+      <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {SHELF_FILTERS.map((filter) => (
+          <SectionFilterButton
+            key={filter.id}
+            active={section === filter.id}
+            onClick={() => setSection(filter.id)}
+          >
+            {filter.label}
+          </SectionFilterButton>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function ProductList({
+  products,
+  onLogUse,
+  onAddPastUses,
+  onMarkEmpty,
+  onEditProduct,
+  onDeleteProduct,
+  currency,
+  forceGrouped = false,
+  compact = false,
+  autoOpenAll = false,
+}) {
+  const groups = useMemo(() => groupShelfProducts(products), [products]);
+  const groupsKey = groups.map((group) => `${group.section}:${group.products.map((product) => product.id).join(",")}`).join("|");
+  const [openSections, setOpenSections] = useState({});
+
+  useEffect(() => {
+    setOpenSections((current) => {
+      const next = {};
+      groups.forEach((group, index) => {
+        next[group.section] = current[group.section] ?? (autoOpenAll || index === 0);
+      });
+      return next;
+    });
+  }, [groupsKey, autoOpenAll]);
+
+  if (!forceGrouped && products.length < 4) {
     return (
       <div className="space-y-3">
         <AnimatePresence initial={false}>
@@ -1384,83 +1736,156 @@ function ProductList({ products, onLogUse, onAddPastUses, onMarkEmpty, onEditPro
   }
 
   return (
-    <div className="space-y-5">
-      {groupShelfProducts(products).map((group) => (
-        <div key={group.section} className="space-y-2.5">
-          <div className="flex items-center justify-between px-1">
-            <p className="text-xs uppercase tracking-[0.14em]" style={{ color: "var(--faint)" }}>
-              {group.section}
-            </p>
-            <p className="text-xs" style={{ color: "var(--faint)" }}>
-              {group.products.length}
-            </p>
+    <div className="space-y-3">
+      {groups.map((group) => {
+        const isOpen = Boolean(openSections[group.section]);
+        const groupValue = shelfProductsValue(group.products);
+
+        return (
+          <div key={group.section} className="overflow-hidden rounded-[1.35rem] border" style={{ borderColor: "var(--line)", background: "var(--surface-strong)" }}>
+            <button
+              type="button"
+              onClick={() => setOpenSections((current) => ({ ...current, [group.section]: !isOpen }))}
+              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+            >
+              <div className="min-w-0">
+                <p className="text-[0.68rem] uppercase tracking-[0.14em]" style={{ color: "var(--faint)" }}>
+                  {group.section}
+                </p>
+                <p className="mt-0.5 text-sm" style={{ color: "var(--muted)" }}>
+                  {group.products.length} product{group.products.length === 1 ? "" : "s"}{groupValue ? ` · ${formatMoney(groupValue, currency)}` : ""}
+                </p>
+              </div>
+              <span className="rounded-full border px-3 py-1 text-xs" style={{ borderColor: "var(--line)", color: "var(--muted)" }}>
+                {isOpen ? "hide" : "show"}
+              </span>
+            </button>
+
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.28, ease }}
+                  className="overflow-hidden border-t"
+                  style={{ borderColor: "var(--line)" }}
+                >
+                  <div className="space-y-2 p-2.5">
+                    <AnimatePresence initial={false}>
+                      {group.products.map((product) => (
+                        compact ? (
+                          <ProductRow
+                            key={product.id}
+                            product={product}
+                            onLogUse={onLogUse}
+                            onAddPastUses={onAddPastUses}
+                            onMarkEmpty={onMarkEmpty}
+                            onEdit={onEditProduct}
+                            onDelete={onDeleteProduct}
+                            currency={currency}
+                          />
+                        ) : (
+                          <ProductCard
+                            key={product.id}
+                            product={product}
+                            onLogUse={onLogUse}
+                            onAddPastUses={onAddPastUses}
+                            onMarkEmpty={onMarkEmpty}
+                            onEdit={onEditProduct}
+                            onDelete={onDeleteProduct}
+                            currency={currency}
+                          />
+                        )
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <AnimatePresence initial={false}>
-            {group.products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onLogUse={onLogUse}
-                onAddPastUses={onAddPastUses}
-                onMarkEmpty={onMarkEmpty}
-                onEdit={onEditProduct}
-                onDelete={onDeleteProduct}
-                currency={currency}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
 
 function ShelfView({ products, activeProducts, empties, dashboardStats, onAddProduct, onLogUse, onAddPastUses, onMarkEmpty, onEditProduct, onDeleteProduct, currency }) {
+  const [shelfQuery, setShelfQuery] = useState("");
+  const [shelfSection, setShelfSection] = useState("all");
+
+  const hasFilters = shelfQuery.trim().length > 0 || shelfSection !== "all";
+
+  const filterShelfProducts = (list) => list.filter((product) => {
+    const sectionMatches = shelfSection === "all" || getCategorySection(product.category) === shelfSection;
+    return sectionMatches && productMatchesShelfSearch(product, shelfQuery);
+  });
+
+  const visibleActiveProducts = filterShelfProducts(activeProducts);
+  const visibleEmpties = filterShelfProducts(empties);
+  const visibleProductsCount = visibleActiveProducts.length + visibleEmpties.length;
+  const shouldUseCompactRows = products.length >= 6 || visibleProductsCount >= 6;
 
   return (
     <section>
       <SectionTitle
         eyebrow="shelf"
         title="things you own"
-        copy="This is not a perfect inventory. It is a small shelf you actually return to."
+        copy="Keep it searchable and sectioned, not one endless drawer scroll."
         action={<PrimaryButton onClick={onAddProduct} className="px-4 py-2.5">add</PrimaryButton>}
       />
 
       {products.length === 0 ? (
-        <Card style={{ background: "var(--surface-strong)" }}>
-          <p className="text-xl tracking-[-0.04em]">add one product first</p>
-          <p className="mt-2 text-sm leading-6" style={{ color: "var(--muted)" }}>
-            Pick the one you keep forgetting to use. Lipstick, skin tint, sunscreen, perfume, anything.
-          </p>
-          <PrimaryButton onClick={onAddProduct} className="mt-5 w-full">add product</PrimaryButton>
-        </Card>
+        <EmptySketch
+          type="compact"
+          title="add one product first"
+          copy="Pick the one you keep forgetting to use. Lipstick, skin tint, sunscreen, perfume, anything."
+          action={<PrimaryButton onClick={onAddProduct} className="w-full">add product</PrimaryButton>}
+        />
       ) : (
         <>
           <ShelfValueCard dashboardStats={dashboardStats} currency={currency} />
+          <ShelfOrganizer
+            query={shelfQuery}
+            setQuery={setShelfQuery}
+            section={shelfSection}
+            setSection={setShelfSection}
+            hasFilters={hasFilters}
+            resultCount={visibleProductsCount}
+            totalCount={products.length}
+            onClear={() => {
+              setShelfQuery("");
+              setShelfSection("all");
+            }}
+          />
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm" style={{ color: "var(--muted)" }}>active shelf</p>
-              <p className="text-xs" style={{ color: "var(--faint)" }}>log use only here</p>
+              <p className="text-xs" style={{ color: "var(--faint)" }}>
+                {hasFilters ? `${visibleActiveProducts.length}/${activeProducts.length} showing` : "tap a section to fold it"}
+              </p>
             </div>
 
-            {activeProducts.length === 0 ? (
-              <Card style={{ background: "var(--surface-strong)" }}>
-                <p className="text-lg tracking-[-0.04em]">no active products right now</p>
-                <p className="mt-2 text-sm leading-6" style={{ color: "var(--muted)" }}>
-                  Add something you want to return to this week.
-                </p>
-                <PrimaryButton onClick={onAddProduct} className="mt-4 w-full">add product</PrimaryButton>
-              </Card>
+            {visibleActiveProducts.length === 0 ? (
+              <EmptySketch
+                type="lipstick"
+                title={hasFilters ? "nothing matches" : "no active products right now"}
+                copy={hasFilters ? "Try another search or clear the filters." : "Add something you want to return to this week."}
+                action={hasFilters ? <GhostButton onClick={() => { setShelfQuery(""); setShelfSection("all"); }} className="w-full">clear filters</GhostButton> : <PrimaryButton onClick={onAddProduct} className="w-full">add product</PrimaryButton>}
+              />
             ) : (
               <ProductList
-                products={activeProducts}
+                products={visibleActiveProducts}
                 onLogUse={onLogUse}
                 onAddPastUses={onAddPastUses}
                 onMarkEmpty={onMarkEmpty}
                 onEditProduct={onEditProduct}
                 onDeleteProduct={onDeleteProduct}
                 currency={currency}
+                forceGrouped={hasFilters || activeProducts.length >= 4}
+                compact={shouldUseCompactRows}
+                autoOpenAll={hasFilters}
               />
             )}
           </div>
@@ -1469,18 +1894,34 @@ function ShelfView({ products, activeProducts, empties, dashboardStats, onAddPro
             <ShelfSummary activeProducts={activeProducts} empties={empties} products={products} />
           </div>
 
-          {empties.length > 0 && (
+          {(visibleEmpties.length > 0 || (hasFilters && empties.length > 0)) && (
             <div className="pt-2">
-              <p className="mb-3 text-sm" style={{ color: "var(--muted)" }}>empties drawer</p>
-              <ProductList
-                products={empties}
-                onLogUse={onLogUse}
-                onAddPastUses={onAddPastUses}
-                onMarkEmpty={onMarkEmpty}
-                onEditProduct={onEditProduct}
-                onDeleteProduct={onDeleteProduct}
-                currency={currency}
-              />
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm" style={{ color: "var(--muted)" }}>empties drawer</p>
+                <p className="text-xs" style={{ color: "var(--faint)" }}>
+                  {hasFilters ? `${visibleEmpties.length}/${empties.length} showing` : `${empties.length} finished`}
+                </p>
+              </div>
+              {visibleEmpties.length > 0 ? (
+                <ProductList
+                  products={visibleEmpties}
+                  onLogUse={onLogUse}
+                  onAddPastUses={onAddPastUses}
+                  onMarkEmpty={onMarkEmpty}
+                  onEditProduct={onEditProduct}
+                  onDeleteProduct={onDeleteProduct}
+                  currency={currency}
+                  forceGrouped
+                  compact
+                  autoOpenAll={hasFilters}
+                />
+              ) : (
+                <EmptySketch
+                  type="compact"
+                  title="no empties match"
+                  copy="Your empties are still here, just hidden by the current filter."
+                />
+              )}
             </div>
           )}
         </>
@@ -1527,12 +1968,11 @@ function VaultView({ vault, onDecide, currency }) {
     <section>
       <SectionTitle eyebrow="paused cart" title="almost bought" copy="Products you paused instead of buying immediately." />
       {vault.length === 0 ? (
-        <Card>
-          <p className="text-lg">nothing paused yet</p>
-          <p className="mt-2 text-sm leading-6" style={{ color: "var(--muted)" }}>
-            Use the pause form on home when a product starts feeling urgent.
-          </p>
-        </Card>
+        <EmptySketch
+          type="receipt"
+          title="nothing paused yet"
+          copy="Use the pause form on home when a product starts feeling urgent."
+        />
       ) : (
         <div className="space-y-3">
           {vault.map((item) => <VaultItem key={item.id} item={item} onDecide={onDecide} currency={currency} />)}
@@ -1544,7 +1984,7 @@ function VaultView({ vault, onDecide, currency }) {
 
 function MiniStat({ label, value }) {
   return (
-    <div className="rounded-2xl border p-3" style={{ borderColor: "var(--line)" }}>
+    <div className="rounded-2xl border p-3" style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
       <p className="text-xs" style={{ color: "var(--muted)" }}>{label}</p>
       <p className="mt-1 text-xl tracking-[-0.05em]">{value}</p>
     </div>
@@ -1649,9 +2089,10 @@ function ProductFormModal({ open, mode = "add", product, onClose, onAddProduct, 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 26 }}
             transition={{ duration: 0.32, ease }}
-            className="w-full max-w-[460px] rounded-[1.5rem] border p-5 shadow-2xl"
+            className="doodle-card max-h-[88dvh] w-full max-w-[460px] overflow-y-auto rounded-[1.5rem] border p-5 shadow-2xl"
             style={{ borderColor: "var(--line)", background: "var(--bg)", color: "var(--text)" }}
           >
+            <DoodleIcon type="lipstick" className="absolute right-5 top-5 h-16 w-16 opacity-[0.15]" />
             <SectionTitle
               eyebrow="shelf"
               title={isEdit ? "edit product" : "add product"}
@@ -1847,7 +2288,7 @@ export default function Dashboard() {
   }
 
   return (
-    <Shell theme={app.theme} font={app.font}>
+    <Shell theme={app.theme} font={app.font} view={view}>
       <AppHeader
         onReset={() => setShowResetConfirm(true)}
         onOpenGuide={() => setGuideOpen(true)}

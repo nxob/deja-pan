@@ -38,3 +38,28 @@ The style popup now includes 5 handwritten fonts and 5 normal fonts. Font select
 ## v20 font fix
 
 The font picker now applies the selected font across the whole app, including headers, buttons, tabs, cards, inputs, modals, and bottom navigation. The only exception is the font style picker itself, where each option still previews its own font.
+
+
+## Netlify deploy
+
+This version is configured as a static export for Netlify. Use:
+
+- Build command: `npm run build`
+- Publish directory: `out`
+- Node version: `20`
+
+The app stores user data locally in the browser with LocalStorage.
+
+
+## v22 indie aesthetic pass
+
+Adds soft sketchbook doodles, scrapbook-style cards, illustrated empty states, and tab-specific background drawings while keeping the app static-export friendly for Netlify.
+
+
+## v23 organized shelf
+
+- Added shelf search by brand, product, category, or shade/note.
+- Added category filter chips for lippies, base, cheeks, eyes, skin + scent, tools, and other.
+- Long shelves now collapse into sections so the Shelf tab does not become one endless list.
+- Large shelves switch to compact product rows with quick actions: use, past, empty, edit, delete.
+- Section headers show product count and known value when prices are entered.

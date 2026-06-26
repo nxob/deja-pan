@@ -105,3 +105,30 @@ input::placeholder,
 textarea::placeholder {
   letter-spacing: -0.02em;
 }
+
+.deja-pan-root {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(90, 70, 55, 0.08) 1px, transparent 0),
+    linear-gradient(120deg, rgba(154, 90, 79, 0.045), transparent 28rem);
+  background-size: 22px 22px, 100% 100%;
+}
+
+.doodle-card {
+  box-shadow: 0 10px 28px rgba(34, 27, 22, 0.045);
+}
+
+.doodle-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(154, 90, 79, 0.08), transparent 9rem),
+    linear-gradient(135deg, rgba(34, 27, 22, 0.025), transparent 22rem);
+  opacity: 0.75;
+}
+
+.doodle-card > * {
+  position: relative;
+  z-index: 1;
+}

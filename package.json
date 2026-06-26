@@ -1,6 +1,6 @@
 {
   "name": "deja-pan",
-  "version": "0.20.0-font-global-fix",
+  "version": "0.23.0-organized-shelf",
   "private": true,
   "scripts": {
     "dev": "next dev",
