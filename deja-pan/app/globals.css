@@ -1,0 +1,134 @@
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Gaegu:wght@300;400;700&family=Inter:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Nanum+Pen+Script&family=Patrick+Hand&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+  background: #f6f0e6;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  min-height: 100%;
+  background: #f6f0e6;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background: #f6f0e6;
+  color: #221b16;
+  font-family: var(--font-app, "Kalam", "Patrick Hand", cursive);
+  font-feature-settings: "kern", "liga", "calt";
+  letter-spacing: -0.02em;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+
+/* Font picker should control the whole app.
+   A few earlier labels/buttons carried accent font classes, so this forces
+   every normal app element to inherit the selected font. Font previews are
+   explicitly excluded so the style picker still shows samples correctly. */
+.deja-pan-root,
+.deja-pan-root *:not([data-font-preview="true"]):not([data-font-preview="true"] *) {
+  font-family: var(--font-app, "Kalam", "Patrick Hand", cursive) !important;
+}
+
+.deja-pan-root button,
+.deja-pan-root input,
+.deja-pan-root select,
+.deja-pan-root textarea {
+  font-family: var(--font-app, "Kalam", "Patrick Hand", cursive) !important;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 1.5px solid currentColor;
+  outline-offset: 3px;
+}
+
+::selection {
+  background: rgba(154, 90, 79, 0.22);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
+h1,
+h2,
+h3,
+[data-display-font="true"],
+[data-hand-font="true"],
+.font-hand {
+  font-family: var(--font-app, "Kalam", "Patrick Hand", cursive) !important;
+  font-variation-settings: normal;
+  letter-spacing: -0.035em;
+}
+
+[data-hand-font="true"],
+.font-hand {
+  font-weight: 400;
+}
+
+[data-hand-font="true"][data-hand-soft="true"] {
+  font-weight: 300;
+}
+
+[data-ui-font="true"] {
+  font-family: var(--font-app, "Kalam", "Patrick Hand", cursive);
+}
+
+input::placeholder,
+textarea::placeholder {
+  letter-spacing: -0.02em;
+}
+
+.deja-pan-root {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(90, 70, 55, 0.08) 1px, transparent 0),
+    linear-gradient(120deg, rgba(154, 90, 79, 0.045), transparent 28rem);
+  background-size: 22px 22px, 100% 100%;
+}
+
+.doodle-card {
+  box-shadow: 0 10px 28px rgba(34, 27, 22, 0.045);
+}
+
+.doodle-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(154, 90, 79, 0.08), transparent 9rem),
+    linear-gradient(135deg, rgba(34, 27, 22, 0.025), transparent 22rem);
+  opacity: 0.75;
+}
+
+.doodle-card > * {
+  position: relative;
+  z-index: 1;
+}
