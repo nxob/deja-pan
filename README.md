@@ -1,6 +1,7 @@
 # déjà pan
 
 A mobile-first PWA for pausing impulse beauty buys, using what you already own, and tracking small no-buy wins.
+Can use via this: https://deja-pan.netlify.app/
 
 ## v17 changes
 
